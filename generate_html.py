@@ -105,7 +105,7 @@ html_template = f"""
   </style>
 </head>
 <body>
-  <div class="intro-message">It still happens even if you look away.</div>
+  <div class="intro-message">It still happens, even if you look away.</div>
   <div class="date-display" id="dateDisplay"></div>
   <video id="player" controls autoplay muted></video>
   <div class="caption-display" id="captionDisplay"></div>
@@ -163,4 +163,4 @@ html_template = f"""
 with open("index.html", "w") as f:
     f.write(html_template)
 
-print("✅ HTML updated with captions displayed below the video!")
+print("✅ HTML updated!")

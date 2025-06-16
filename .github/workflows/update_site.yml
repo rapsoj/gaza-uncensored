@@ -40,5 +40,5 @@ jobs:
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
         git add .
-        git commit -m "🔄 Auto-update videos and HTML"
+        git commit -m "🔄 Auto-update videos and HTML" || echo "No changes to commit"
         git push

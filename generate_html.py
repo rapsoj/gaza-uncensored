@@ -43,7 +43,7 @@ html_template = f"""
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Gaza Uncensored</title>
+  <title>Uncensored Gaza</title>
   <style>
     body {{
       background: #000;

@@ -59,6 +59,7 @@ video_objects = [
     f'{{ src: "{v["src"]}", date: "{v["date"]}", caption: `{v["caption"]}` }}'
     for v in video_entries
 ]
+video_list_js = ",\n      ".join(video_objects)
 
 html_template = f"""
 <!DOCTYPE html>

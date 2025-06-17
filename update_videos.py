@@ -6,7 +6,7 @@ api_id = int(os.getenv("API_ID"))
 api_hash = os.getenv("API_HASH")
 
 video_dir = 'videos'
-text_dir = 'video_texts'
+text_dir = 'video_captions'
 date_dir = 'dates'
 
 # Ensure directories exist

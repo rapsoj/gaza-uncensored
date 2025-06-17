@@ -1,5 +1,6 @@
 import os
 import re
+from datetime import datetime
 
 video_dir = "videos"
 date_dir = "dates"
@@ -9,14 +10,20 @@ def numeric_key(filename):
     match = re.match(r"(\d+)", filename)
     return int(match.group(1)) if match else float('inf')
 
-videos = sorted(
-    (f for f in os.listdir(video_dir) if f.endswith(".mp4")),
-    key=numeric_key,
-    reverse=True
-)
+def parse_date(date_str):
+    # Example: "Monday, June 16th, 2025"
+    try:
+        # Remove ordinal suffixes: "16th" → "16"
+        date_clean = re.sub(r'(\d+)(st|nd|rd|th)', r'\1', date_str)
+        return datetime.strptime(date_clean, "%A, %B %d, %Y")
+    except Exception:
+        return datetime.min  # fallback for bad/missing dates
 
-video_objects = []
-for video in videos:
+video_entries = []
+for video in os.listdir(video_dir):
+    if not video.endswith(".mp4"):
+        continue
+
     base_name = os.path.splitext(video)[0]
 
     # Date
@@ -24,8 +31,10 @@ for video in videos:
     try:
         with open(date_path, "r") as df:
             full_date = df.read().strip()
+            parsed_date = parse_date(full_date)
     except FileNotFoundError:
         full_date = "Unknown date"
+        parsed_date = datetime.min
 
     # Caption
     caption_path = os.path.join(caption_dir, base_name + ".txt")
@@ -35,9 +44,21 @@ for video in videos:
     except FileNotFoundError:
         caption = ""
 
-    video_objects.append(f'{{ src: "{video_dir}/{video}", date: "{full_date}", caption: `{caption}` }}')
+    video_entries.append({
+        "src": f"{video_dir}/{video}",
+        "date": full_date,
+        "parsed_date": parsed_date,
+        "caption": caption
+    })
 
-video_list_js = ",\n      ".join(video_objects)
+# 🔁 Sort by parsed_date (most recent first)
+video_entries.sort(key=lambda x: x["parsed_date"], reverse=True)
+
+# 🔄 Create JS objects
+video_objects = [
+    f'{{ src: "{v["src"]}", date: "{v["date"]}", caption: `{v["caption"]}` }}'
+    for v in video_entries
+]
 
 html_template = f"""
 <!DOCTYPE html>

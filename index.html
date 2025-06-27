@@ -1,0 +1,215 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Uncensored Gaza</title>
+  <style>
+    body {
+      background: #000;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      height: 100vh;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+    .date-display {
+      font-size: 1.2rem;
+      margin: 20px 0 10px;
+      color: #ccc;
+    }
+    video {
+      height: 70vh;
+      width: auto;
+      background: black;
+      object-fit: contain;
+      display: block;
+    }
+    .caption-display {
+      font-size: 1rem;
+      margin-top: 10px;
+      margin-bottom: 10px;
+      max-width: 90%;
+      text-align: center;
+      color: #aaa;
+    }
+    .intro-message {
+      font-size: 1.5rem;
+      margin-top: 30px;
+      margin-bottom: 10px;
+      color: red;
+      text-align: center;
+    }
+    .controls {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    button {
+      font-size: 1.5rem;
+      padding: 10px 20px;
+      cursor: pointer;
+      background: #222;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      user-select: none;
+    }
+    button:hover {
+      background: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="intro-message">It still happens, even if you look away.</div>
+  <div class="date-display" id="dateDisplay"></div>
+  <video id="player" controls autoplay muted></video>
+  <div class="caption-display" id="captionDisplay"></div>
+  <div class="controls">
+    <button id="prevBtn" aria-label="Previous video">⬅️ Previous</button>
+    <button id="nextBtn" aria-label="Next video">Next ➡️</button>
+  </div>
+
+  <script>
+    const videos = [
+      { src: "videos/168.mp4", date: "Monday, June 23rd, 2025", caption: `Satellite images of the Shujaiya neighborhood before and during the war, showing the extent of the destruction in the Shujaiya neighborhood east of Gaza City due to the war.  صور عبر الاقمار الصناعية لحي الشجاعية قبل وأثناء الحرب ويظهر فيه حجم الدمار الكبير في حي الشجاعية شرق مدينة غزة بسبب الحرب` },
+      { src: "videos/171.mp4", date: "Monday, June 23rd, 2025", caption: `An infant under the age of one loses his leg following an airstrike that targeted his family in eastern Al-Tuffah neighborhood, the baby lost one of his limbs, while most of his relatives were injured. His mother tries to comfort him amidst the pain — a scene that captures the deep human tragedy civilians in Gaza continue to endure.  رضيع لم يتجاوز عامه الأول أُصيب إصابة بليغة في قدمه جراء قصف استهدف عائلته شرق حي التفاح، فيما أُصيب معظم أفراد أسرته. تحاول أمه تهدئته وسط الألم، في مشهد يلخص فظاعة ما يتعرض له المدنيون في غزة.` },
+      { src: "videos/167.mp4", date: "Monday, June 23rd, 2025", caption: `An Israeli air strike targets a group of civilians west of Gaza city.   الاحتلال يقصف مجموعة من المواطنين غرب مدينة غزة` },
+      { src: "videos/170.mp4", date: "Monday, June 23rd, 2025", caption: `An Israeli drone strike kills three children while they were collecting wood in the Shejaeya neighborhood, west of Gaza.   استشهاد 3 أطفال كانوا يجمعون الحطب في قصف إسرائيلي على محيط "سوق الخضار" في حي الشجاعية شرقي مدينة غزة` },
+      { src: "videos/169.mp4", date: "Monday, June 23rd, 2025", caption: `A father lost his son in air strike that targeted a group of civilians in the Shejaeya neighborhood east of Gaza.  اب يودع ابنه الذي ارتقى في استهداف مجموعة من المواطنين في حي الشجاعية شرق مدينة غـ..ـزة` },
+      { src: "videos/166.mp4", date: "Friday, June 20th, 2025", caption: `Humanitarian Appeal Baby Zakaria Al-Mabhouh (11 months old) is battling severe malnutrition. His weight has dropped to just 4 kg (8.8 pounds), as food and medicine remain out of reach in the besieged Gaza Strip. Zakaria urgently needs medical treatment and therapeutic food to survive. To contact his family directly: +970594047433 +972594047433 مناشدة إنسانية الطفل زكريا المبحوح (11 شهرًا) يُصارع سوء التغذية الحاد بعد أن أصبح وزنه 4 كغم فقط (8.8 باوند)، وسط غياب الغذاء والدواء في قطاع غزة المحاصر. زكريا بحاجة ماسة إلى علاج وغذاء طبي لإنقاذ حياته. بلتواصل مع عائلته مباشرة: 0594047433` },
+      { src: "videos/163.mp4", date: "Friday, June 20th, 2025", caption: `A father lost both of his daughters in an Israeli air strike in the Shati refugee camp, west of Gaza.   اب يودع طفلتيه التي ارتقيتا في قصـ..ـف استهدف مخيم الشاطئ غرب مدينة غـ..ـزة` },
+      { src: "videos/165.mp4", date: "Friday, June 20th, 2025", caption: `A grieving father sits in tears beside the body of his child, killed in the ongoing bombardment of Gaza.   أبٌ مفجوع يجلس باكياً إلى جانب جثـ..ـمان طفله الذي ارتقى جراء القصـ..ـف المتواصل على غـ..ـزة` },
+      { src: "videos/164.mp4", date: "Friday, June 20th, 2025", caption: `A father bids farewell to his son who was killed in an Israeli air strike in Al-Shati refugee camp, west of Gaza City.   أب يودع طفله الذي ارتقى بعد استهداف الاحتلال لخيمة في مخيم الشاطئ غرب مدينة غـ. ـزة.` },
+      { src: "videos/159.mp4", date: "Tuesday, June 17th, 2025", caption: `Martyrs and a number of injuries after a tent sheltering displaced people was targeted in western Khan Younis.  شهـ ـداء وعدد من الإصابات جرّاء استـ ـهداف خيمة تؤوي نازحـ ـين غرب خان يونس.` },
+      { src: "videos/156.mp4", date: "Monday, June 16th, 2025", caption: `The bodies of children and victims were thrown dozens of meters after an airstrike struck a home in Al-Nuseirat camp, central Gaza.   تطاير أجساد الأطفال و الشـ..ـهداء لعشرات الأمتار من شدة الانفجار عقب قصـ..ـف منزل في مخيم النصيرات وسط القطاع.` },
+      { src: "videos/157.mp4", date: "Monday, June 16th, 2025", caption: `Israeli occupation vehicles open fire on civilians gathered east of Khan Younis, in the Al-Tahlia area, as they attempt to obtain flour.  إطـ ـلاق نار من قبل آليات الاحـ ـتلال على المواطنين .. المتواجدون شرق مدينة خانيـ ـونس منطقة التحليه للحصول على الطحين` },
+      { src: "videos/153.mp4", date: "Sunday, June 15th, 2025", caption: `A Palestinian child was injured and another was killed in an air strike that targeted a group of civilians in Al Zaytoun neighborhood in Gaza city.  اصـ..ـابة طفل و ارتقاء طفلة في قـ..صف استهدف مواطنين في حي الزيتون.` },
+      { src: "videos/145.mp4", date: "Friday, June 13th, 2025", caption: `A heartbreaking scene from Rafah: A son transports his martyred father's body on his bicycle after he was targeted near a U.S. aid distribution point in the western part of the city.  لقطة مؤلمة من رفح: ابن ينقل جث مان والده الش هيد على دراجته الهوائية بعد استهدافه قرب نقطة توزيع المساعدات الأمريكية في غرب المدينة.` },
+      { src: "videos/143.mp4", date: "Thursday, June 12th, 2025", caption: `An Israeli air strike targets a group of civilians in the Maghazi refugee camp, central Gaza.  طيران الاحتلال يستهدف مجموعة من المواطنين في مخيم المغازي وسط القطاع` },
+      { src: "videos/144.mp4", date: "Thursday, June 12th, 2025", caption: `A child with special needs clears rubble from the remains of his home With a weary body and unbreakable determination, this child tries to remove the traces of bombing from the place that was once his refuge. His disability didn't stop him from standing amid the destruction-his humanity stood as a witness to a pain beyond words. In Gaza, even the most vulnerable are forced to be strong.  طفل من ذوي الاحتياجات الخاصة يزيل الركام من بين أنقاض منزله بجسدٍ منهك وعزيمة لا تنكسر، يحاول هذا الطفل أن يزيل آثار القصف عن المكان الذي كان يومًا ملجآه. لم تمنعه إعاقته من الوقوف وسط الركام... بل وقفت إنسانيته شاهدة على وجع لا يروى، في غزة، حتى الضعفاء مجبرون أن يكونوا أقوياء.` },
+      { src: "videos/142.mp4", date: "Thursday, June 12th, 2025", caption: `Israeli occupation forces targeted a tent sheltering Palestinian displaced civilians, killing and injuring many of them, including children.` },
+      { src: "videos/141.mp4", date: "Wednesday, June 11th, 2025", caption: `Escaping from death to death .. Israeli occupation forces heavily fired at Palestinian civilians gathering to receive aid supplies in the Netzarim axis.  الهروب من المـ..ـوت إلى المـ..ـوت .. محاولة الوصول إلى مراكز توزيع المساعدات الأمريكية` },
+      { src: "videos/140.mp4", date: "Tuesday, June 10th, 2025", caption: `A Palestinian child was killed by the Israeli occupation forces along with others while they were trying to get aid from the GHF in the Netzarim axis, central Gaza.   طفل ارتقى مع اخرين برصاص الاحتلال اثناء محاولتهم الوصول إلى مركز المساعدات الأمريكي في محور نتساريم وسط القطاع.` },
+      { src: "videos/138.mp4", date: "Sunday, June 8th, 2025", caption: `10-year-old Mais Abdel Aal She was playing inside her tent when she was struck by a bullet from a drone. The bullet penetrated her skull, causing partial paralysis, nerve damage, and loss of vision. A portion of her skull had to be removed, and since then, she has been suffering from severe complications: the wound remains open, infections are frequent, and seizures persist. Just days ago, doctors discovered worms inside the wound, forcing them to reopen her skull under extremely limited medical conditions. Mais is in constant pain, and her condition is deteriorating by the day. She urgently needs immediate medical treatment abroad - every minute of delay puts her life at serious risk. For contact with Mais Abdel Aal's aunt: +972 59 282 5417` },
+      { src: "videos/139.mp4", date: "Sunday, June 8th, 2025", caption: `Dozens of injuries arrive at the Baptist hospital following the bombing of a home in Al Sabrah neighborhood in Gaza city.   عشرات الاصـ…ـابات تصل إلى المستشفى المعمداني بعد قصـ..ـف منزل في حي الصبرة في مدينة غـ..ـزة.` },
+      { src: "videos/133.mp4", date: "Thursday, June 5th, 2025", caption: `Urgent Appeal to Save 3-Year-Old Hatim Awad. Hatim is the sole survivor of his family after his father and pregnant mother were killed in an Israeli airstrike on their home in Al-Qarara - Khan Younis. He suffers from severe third- and fourth-degree burns covering his entire body, internal bleeding, and constant high fever. His condition is critical and requires urgent treatment abroad, especially for skin grafting that cannot be done locally. Every moment of delay puts his life at greater risk. To contact Hatim's grandfather:  +972599708804 مناشدة عاجلة لإنقاذ الطفل حاتم عوض ( سنوات) حاتم هو الناجي الوحيد من عائلته بعد استش هاد والده ووالدته الحامل بقصف إسرائيلي على منزلهم في القرارة - خان يونس. يعاني من حروق شديدة تغطي جسده بالكامل، ونزيف داخلي وارتفاع دائم ي الحرارة. حالته خطيرة جدًا ويحتاج علاجًا عاجلا خارج غزة، خاصة لترقيع جلدي لا يمكن توفيره محليًا. كل لحظة تأخير تهدد حياته. للتواصل مع جد الطفل حاتم عوض: * 00972599708804` },
+      { src: "videos/132.mp4", date: "Thursday, June 5th, 2025", caption: `Israeli occupation drones relentlessly hunt down civilians, striking without mercy — neither children nor the elderly are spared.  تطارد طائرات الاحتلال المسيرة المدنيين بلا هوادة، وتضرب دون رحمة، فلا تفرق بين طفل أو مسن.` },
+      { src: "videos/134.mp4", date: "Thursday, June 5th, 2025", caption: `Urgent Humanitarian Appeal to Save Ghadeer Ghadeer, a 30-year-old mother of three, was severely injured in the recent attacks on Gaza. She has lost her left leg and suffers from serious damage to her right leg, with a real risk of losing it too if she doesn't receive urgent and advanced medical care abroad. Ghadeer is not only fighting pain-she's fighting to stand again, to care for her children, to live with dignity. We appeal to all compassionate hearts and humanitarian organizations: act now to help save her leg, her future, her motherhood. For direct contact with Ghadeer's family: +970598320537` },
+      { src: "videos/136.mp4", date: "Thursday, June 5th, 2025", caption: `Taysir Mansour (17 years old) suffered severe second-degree burns after an Israeli airstrike targeted his family. His condition is critical, and he faces the risk of losing both hands after more than eight failed skin graft and reconstructive surgeries. His injuries have worsened due to severe infections and joint stiffness. For the past nine months, Taysir has been receiving inadequate treatment at Nasser Hospital under the care of Doctors Without Borders. His condition continues to deteriorate due to the lack of proper medication and medical resources. Taysir is not alone-his entire family suffered burns, and his mother died from her injuries. Now, Taysir, the eldest, is the only provider for his family, but he is helpless and at risk of losing both hands. Taysir urgently needs treatment abroad. Save his hands, save his life, save his future. To contact the family of the patient's father, Taysir Mansour: +972 59 229 1674` },
+      { src: "videos/137.mp4", date: "Thursday, June 5th, 2025", caption: `Two children in Gaza were bombed while wearing the Eid clothes they had just gotten that morning. Moments of joy turned into flames falling from the sky. Heartbroken families ask: What was the children’s fault? Why does this hell keep repeating?  طفلان من غزة قُـ صفا وهما يرتديان ملابس العيد التي اشتروها صباحًا. كانت لحظات فرح قصيرة انتهت بنارٍ هبطت من السماء. تساؤلات موجعة تملأ قلوب ذويهم: ما ذنب الأطفال؟ ولماذا يستمر هذا الجحيم؟` },
+      { src: "videos/135.mp4", date: "Thursday, June 5th, 2025", caption: `` },
+      { src: "videos/129.mp4", date: "Tuesday, June 3rd, 2025", caption: `Urgent Appeal to Save the Life of Baby Maryam in Gaza Maryam is a two-year-old girl who used to weigh 10 kilograms - today, she weighs only 4. She suffers from an enlarged liver, kidneys, and spleen, as well as a severe drop in blood levels (hemoglobin at 4). Her condition is critical and she urgently needs medical treatment outside the Gaza Strip. Maryam's father holds official medical reports and approval from the World Health Organization. All he asks is for your help to get her out of Gaza so she can receive life-saving treatment abroad. • For help and inquiries: 00970593214050` },
+      { src: "videos/128.mp4", date: "Tuesday, June 3rd, 2025", caption: `Horrific scenes are coming  from Gaza. Children massacred by Israeli and American bombs.   مشاهد مروعة من غزة` },
+      { src: "videos/130.mp4", date: "Tuesday, June 3rd, 2025", caption: `` },
+      { src: "videos/126.mp4", date: "Monday, June 2nd, 2025", caption: `After 15 years of waiting… Mohammad lies beneath the rubble Born through IVF, he was his parents’ only child. His father ran through the streets of Jabalia al-Balad in northern Gaza, desperately searching for an ambulance to save his son after pulling him from under the rubble.  بعد 15 عامًا من الانتظار… محمد تحت الركام وُلد عبر عملية إخصاب وكان وحيد والديه. ركض والده في شوارع جباليا البلد شمال قطاع غزة، يبحث بيأس عن سيارة إسعاف لإنقاذ طفله بعد انتشاله من تحت الأنقاض.` },
+      { src: "videos/124.mp4", date: "Monday, June 2nd, 2025", caption: `The first moments following the bombing of the tents of displaced Palestinians in Mawasi area, west of Khan Younis. A number of casualties were reported.  اللحظات الاولى لقصف خيام النازحين قي منطقة المواصي غرب خانيونس.` },
+      { src: "videos/120.mp4", date: "Monday, June 2nd, 2025", caption: `Urgent Appeal Baby Zakaria Al-Majdoub, 11 months old, is suffering from severe acute malnutrition that threatens his life. Zakaria's health is deteriorating day by day, and he urgently needs medical care and therapeutic nutrition to survive. We call on the relevant authorities, medical organizations, and all those who can help to intervene immediately and save this innocent child before it's too late. For help or inquiries: +972594047433 / +970594047433 مناشدة عاجلة الطفل زكريا المجدوب، عمره 11 شهرًا، يُعاني من سوء تغذية حاد يهدد حياته. الوضع الصحي لزكريا يتدهور يومًا بعد يوم، ويحتاج إلى رعاية طبية عاجلة وتغذية علاجية لإنقاذه. نناشد الجهات المختصة، والمؤسسات الطبية، وكل من يستطيع المساعدة، سرعة التدخل لإنقاذ هذا الطفل البريء قبل فوات الأوان. للتواصل والمساعدة: 0594047433` },
+      { src: "videos/125.mp4", date: "Monday, June 2nd, 2025", caption: `"Just 30 minutes... there's no transportation" Ahmad Hassouna receives a call from an Israeli officer, ordering him to evacuate his home before the neighboring house is bombed. Thirty minutes — that's all he has to save himself, his children, and his family. In the heart of the chaos, he scrambles to protect them from a possible massacre. A single moment filled with fear, panic, tension... and the nearness of death.  "بس 30 دقيقة... ما في مواصلات" أحمد حسونة يتلقى اتصالًا من ضابط إسرائيلي لإخلاء منزله قبل قصف محتمل للبيت المجاور. ثلاثون دقيقة فقط قد تكون الفاصل بين الحياة والم وت له ولأطفاله وأسرته. افي قلب الميدان، يحاول النجاة بهم من مح رقة محتملة. حظات تختصر كل شيء: الخوف, الارتباك، التوتر، والاقتراب من الموت.` },
+      { src: "videos/123.mp4", date: "Monday, June 2nd, 2025", caption: `Urgent Humanitarian Appeal | Child: Osama Al-Ruqab Osama Al-Ruqab, a young child, is suffering from chronic diarrhea, recurrent chest infections, and severe malnutrition. According to doctors, Osama urgently needs genetic testing abroad to diagnose his condition - yet, until now, his case has not been referred for treatment outside Gaza. Osama's health continues to deteriorate. He has been prescribed a special diet rich in fats, proteins, and high-calorie foods such as meat, chicken, nuts, cheese, and oils. However, due to the closure of border crossings and the severe shortage of food supplies, his family is unable to secure the nutrition he desperately needs. & For support or inquiries, please contact Osama's mother: +972567620880` },
+      { src: "videos/118.mp4", date: "Thursday, May 29th, 2025", caption: `Dozens of Palestinians were injured and several others were killed after the occupation bombed a home in the Braij refugee camp, central Gaza.  عشرات المصـ..ـابين و الشـ..ـهداء في استهداف منزل في مخيم البريج وسط القطاع.` },
+      { src: "videos/117.mp4", date: "Wednesday, May 28th, 2025", caption: `Five Palestinians were killed, including a child, and others were injured in an air strike that targeted a phone charging point in Jabalia al-Balad, north of the Gaza Strip.   ارتقاء خمسة مواطنين بينهم طفلة واصابات تصل الى مستشفى المعمداني جراء استهداف نقطة شحن في جباليا البلد شمال القطاع` },
+      { src: "videos/114.mp4", date: "Monday, May 26th, 2025", caption: `Horrific images as civil defense try to recover the charred bodies of martyrs after the Israeli occupation forces committed a massacre bombing the Fahmi Al-Jarjawi School in Al-Daraj causing fires to break out. The school is home to displaced Palestinians in Gaza City.  ‎قوات الاحـ ـتلال الإسرائيلي تستهدف مدرسة فهمي الجرجاوي بحي الدرج شرق مدينة غزة، ما أدى إلى اندلاع حرائق في المكان. ‎المدرسة كانت تؤوي عشرات العائلات الفلسطـ ـينية النازحة` },
+      { src: "videos/115.mp4", date: "Monday, May 26th, 2025", caption: `A little girl trapped in the fire, tries to survive after the bombing of the Jerjawi school that shelters displaced families in Al Daraj neighborhood in Gaza city.   طفلة تصارع النيـ..ـران المشتعلة حولها وتحاول النجاة بنفسها من الحريق الكبير الذي اشتعل جراء قصـ…ـف الاحتـ…لال مدرسة فهمي الجرجاوي التي تؤوي نازحين في حي الدرج بمدينة غـ…ـزة.` },
+      { src: "videos/113.mp4", date: "Monday, May 26th, 2025", caption: `Horrific images of charred bodies after the Israeli occupation forces committed a massacre at Fahmi Al-Jarjawi School in Al-Daraj causing fires to break out.` },
+      { src: "videos/116.mp4", date: "Monday, May 26th, 2025", caption: `Palestinian children suffer serious burns in the bombing of the Gerjawi school in Gaza city.   اطفال اصيبوا بحروق خطيرة في قصف مدرسة الجرجاوي في مدينة غزة` },
+      { src: "videos/110.mp4", date: "Sunday, May 25th, 2025", caption: `The child Mustafa Yassin (8) has died of malnutrition amid the ongoing Israeli blockade and worsening famine, at the Baptist Hospital in Gaza City.  ارتقاء الطفل مصطفى ياسين عمره 8 سنوات بسبب سوء التغذية ونقص الفيتامينات في ظل الحصار الاسرائيلي وتفاقم المجاعة في مستشفى المعمداني بمدينة غزة` },
+      { src: "videos/109.mp4", date: "Sunday, May 25th, 2025", caption: `This is what remains of Rafah.   ما تبقى من رفح` },
+      { src: "videos/112.mp4", date: "Sunday, May 25th, 2025", caption: `The little girl Maryam Abdullah Abu Daqa, 3 years old, suffers from severe malnutrition due to the ongoing siege on the Gaza Strip.  الطفلة مريم عبد الله أبو دقة، 3 سنوات تعاني من سوء تغذية حاد نتيجة الحصار المتواصل على قطاع غـ…زة.` },
+      { src: "videos/111.mp4", date: "Sunday, May 25th, 2025", caption: `The child, Mohammed Yassin (4 years old), was martyred after severe starvation, malnutrition, and a lack of essential vitamins in Gaza, joining his father who was martyred earlier in the war—amid ongoing bombardment and a suffocating blockade.  الطفل محمد ياسين (4 أعوام) يلتحق بوالده الذي استشـ ـهد في الحرب، بعد أن فارق الحياة متأثرًا بالمجاعة وسوء التغذية ونقص الفيتامينات في غـ ـزة، وسط استمرار العـ ـدوان والحصار الخانق.` },
+      { src: "videos/107.mp4", date: "Friday, May 23rd, 2025", caption: `Eight-year-old Asaad Yousef Al-Azaiza lost his mother, sister, aunt, and grandmother in a deadly air-strike.. He suffers from an amputation in his right leg, shrapnel injuries in his right eye and liver, and internal bleeding in his lungs. To this moment, he still doesn't know that his loved ones are gone. To contact his father: +970 592 900 594 / +972 592 900 594 الطفل أسعد يوسف العزايزة (8 سنوات) فقد أمّه، وأخته، وعمّته، وجدّته في قصف دموي... أصيب ببتر في قدمه اليمنى، وش ظايا في عينه وكبده، وتجمّع دموي في رئتيه. حتى هذه اللحظة، لا يعلم أن من أحبّهم قد رحلوا... للتواصل مع والده: * +970 592 900 594 / +972 592 900 594` },
+      { src: "videos/103.mp4", date: "Wednesday, May 21st, 2025", caption: `A wounded child bids farewell to both his sister and his mother who were in martyred in an Israeli air strike in Gaza Strip.  طفل مصـ..ـاب يودع شقيقته التي ارتقت مع والدته في القصـ..ـف المتواصل على قطاع غـ..ـزة.` },
+      { src: "videos/102.mp4", date: "Wednesday, May 21st, 2025", caption: `` },
+      { src: "videos/106.mp4", date: "Wednesday, May 21st, 2025", caption: `A number of children were injured in the bombing of a home in Jabalia town, north of Gaza.   اطفال أصيبوا في قـ..ـصف منزل في جباليا البلد شمال القطاع.` },
+      { src: "videos/105.mp4", date: "Wednesday, May 21st, 2025", caption: `` },
+      { src: "videos/101.mp4", date: "Tuesday, May 20th, 2025", caption: `At least three Palestinians were killed, including 2 infants, after the occupation bombed a home in Deir Al Balah.   ثلاثة شهـ..ـهداء في قصـ..ف منزل في دير البلح وسط القطاع.` },
+      { src: "videos/100.mp4", date: "Tuesday, May 20th, 2025", caption: `` },
+      { src: "videos/98.mp4", date: "Monday, May 19th, 2025", caption: `A little kid was injured during the large scale Israeli attack to cover for the special forces that infiltrated Khan Younis.  طفل اصيب خلال الهجوم الواسع الذي شنع طيران الاحتلال خلال غطائه على القوات الخاصة التي تسللت الى خانيونس.` },
+      { src: "videos/97.mp4", date: "Monday, May 19th, 2025", caption: `A heartbreaking scene from around the Indonesian Hospital in northern Gaza: Families evacuate their wounded relatives on hospital beds, due to the siege and ground incursion by the occupying forces, after treatment and safe evacuation became impossible.  مشهد مؤلم من محيط المستشفى الإندونيسي شمال غزة: أهال يُجلون ذويهم المصابين على أسرّة المستشفى، بسبب حصار واجتياح قوات الاحت لال للمكان، بعد أن تعذّر استمرار العلاج أو الإخلاء الآمن.` },
+      { src: "videos/99.mp4", date: "Monday, May 19th, 2025", caption: `A number of Palestinians were killed and others were injured this morning in an Israeli bombardment on two homes east of the town of Al-Fukhari in the southern Gaza Strip.  لحظة وصول اصابات و شهداء في قصف الاحتلال على مدينة خانيونس صباح اليوم.` },
+      { src: "videos/90.mp4", date: "Sunday, May 18th, 2025", caption: `An Israeli drone strike targeted a group of civilians including children in Deir Al Balah central Gaza.   اصـ..ـابـ..ـات خطـ..ـيرة غالبيتهم من الاطفال نتيجة لاستهداف صـ..ـاروخ استطلاع لمجموعة من المواطنين في شارع الحدبة وسط دير البلح.` },
+      { src: "videos/96.mp4", date: "Sunday, May 18th, 2025", caption: `A woman from Gaza pleads for opening the crossings for the wounded and children: "We are living a war of hunger. Our children are dying - no flour, no food, no medicine."  سيدة من غزة تناشد بفتح المعابر للجرحى والأطفال وتقول: "نعيش حربًا من الجوع، آطفالنا يموتون، ولا طحين ولا غذاء ولا دواء"` },
+      { src: "videos/95.mp4", date: "Sunday, May 18th, 2025", caption: `Mothers bid farewell to their sons who were killed in the Israeli air strike that targeted the tents of displaced people in Mawasi area in Khan Younis.   امهات يودعن اطفالهن الذين ارتقوا في قصف خيام النازحين في مواصي خانيونس.` },
+      { src: "videos/89.mp4", date: "Sunday, May 18th, 2025", caption: `In Jabalia's Ezbet Abd Rabbo, a man stood in shock, pleading for help to transport the body of his wife, lying lifeless on the ground after she was martyred in an Israeli strike. All his children had also been martyred. But with ambulances in short supply, priority was given to the wounded. People kept fleeing... everyone was running from death, and he was left to carry his grief alone.  في عزبة عبد ربه بجباليا، وقف رجل مذهولًا يطلب المساعدة لنقل جثمان زوجته، الملقى على الأرض بعد أن استُش هدت إثر قص ف إسرائيلي. وقد استُش هد جميع أطفاله أيضًا. لكن شحّ الإسعافات جعل الأولوية للمصابين. فيما يستمر الناس في النزوح... الكل يهرب من الموت، وهو بقي يحتضن الفقد وحده.` },
+      { src: "videos/88.mp4", date: "Friday, May 16th, 2025", caption: `Dozens of Palestinians were killed in the heavy Israeli air strikes in Gaza city.  عشرات الشـ..ـهداء في غرات اسرائيلية على مدينة غزة و شمالها` },
+      { src: "videos/87.mp4", date: "Friday, May 16th, 2025", caption: `In a heartbreaking scene, a father kisses the foot of his daughter who was martyred in an Israeli air-strike that targeted homes in northern Gaza.  في مشهد يم زق القلب، آب يقبّل قدم طفلته التي ارتقت شه يدة جراء قصحف الاحتللال لمنازل في شمال قطاع غزة.` },
+      { src: "videos/86.mp4", date: "Friday, May 16th, 2025", caption: `Horrific massacres were committed against Palestinians in Beit Lahya, north of Gaza.  مجـ..ـازر مـ…روعة ارتكبها الاحتلال بحق المواطنين في بيت لاهيا شمال القطاع.` },
+      { src: "videos/85.mp4", date: "Tuesday, May 13th, 2025", caption: `A soldier in the Israeli occupation army documents with his camera the widespread destruction affecting the neighborhoods of displaced Palestinians in Rafah, proudly showcasing the devastation and sending veiled threats to Arabs and Palestinians aspiring to establish their own state.  جندي في جيش الاحـ ـتلال الإسرائيلي يوثق بعدسته مشاهد الدمار الواسع الذي يطال أحياء المهجّرين الفلسـ ـطينيين في رفح، مستعرضًا الخراب بفخر، وموجّهًا رسائل تهـ ـديد مبطنة للعرب والفلسطـ ـينيين الطامحين لإقامة دولتهم.` },
+      { src: "videos/79.mp4", date: "Sunday, May 11th, 2025", caption: `Urgent Humanitarian Appeal Najwa Hussein Fouad Hajjaj, six years and three months old, is suffering from severe malnutrition due to the lack of food and water in Gaza caused by the closure of the crossings. Her health is deteriorating, and her family is unable to provide her basic needs. For contact and assistance, please call the following numbers: 00972599196591 00970599196591 مناشدة إنسانية عاجلة الطفلة تجهنية حابنفو نقصا الطع سلا وثلاغة أشهر الغلاق المعا حالتها الصحية تتدهور، والعائلة عاجزة عن توفير احتياجاتها الأساسية. مم للتواصل والمساعدة، يرجى الاتصال على الأرقام التالية: 00972599196591 00970599196591` },
+      { src: "videos/81.mp4", date: "Sunday, May 11th, 2025", caption: `Three children were martyred and others were injured after the occupation bombed a tent, west of Khan Younis.  تلات شـ..ـهداء أطفال وعدد من الإصـ..ـابات جراء استهداف خيمة غرب مدينة خانيونس` },
+      { src: "videos/84.mp4", date: "Sunday, May 11th, 2025", caption: `A father bids farewell to his little daughter who was killed in an Israeli air strike that targeted the tents of displaced people in Mawasi area in Khan Younis.  فلسطيني يبكي طفلته التي ارتقت بقــصف على مواصي خانيونس جنوب قطاع غـ.ـزة` },
+      { src: "videos/80.mp4", date: "Sunday, May 11th, 2025", caption: `A number of Palestinian fishermen were injured by gunfire of Israeli gunboats in the Mediterranean seat near Gaza city.   اصابة عدد من الصادّين الفلسطينيين بنيران بحرية الاحتلال في غزة.` },
+      { src: "videos/83.mp4", date: "Sunday, May 11th, 2025", caption: `Last night in Gaza. A paramedic collects the parts of a child’s body following an Israeli air strike.` },
+      { src: "videos/56.mp4", date: "Thursday, May 8th, 2025", caption: `A number of Palestinians were killed including children in an air strike in Abasn area east of Khan Younis.   شهـ.داء و اصابـ.ـات في قصف استهدف بلدة عبسان شرق خانيونس` },
+      { src: "videos/69.mp4", date: "Thursday, May 8th, 2025", caption: `Palestinian children were injured in an air strike on the north of Gaza. Horrific massacres are being committed every single moment in Gaza.  مـ.ـجـ.ـ.ازر متواصلة بحق المواطنين في شمال غزة` },
+      { src: "videos/58.mp4", date: "Thursday, May 8th, 2025", caption: `A little girl was killed under the rubble of Al Karama school which was bombed by the Israeli warplanes in Gaza.` },
+      { src: "videos/65.mp4", date: "Thursday, May 8th, 2025", caption: `Children in Gaza are either dying from bombs or starving to death.   الأطفال في غـ ـزة إما يمـ ـوتون بالصـ.ـواريخ أو جوعًا بسبب المجاعة.` },
+      { src: "videos/62.mp4", date: "Thursday, May 8th, 2025", caption: `` },
+      { src: "videos/75.mp4", date: "Thursday, May 8th, 2025", caption: `An infant was injured in the bombing of a tent in Khan Younis city.  رضيعة اصيبت في قــ.صف خيمة في خانيونس` },
+      { src: "videos/57.mp4", date: "Thursday, May 8th, 2025", caption: `An infant was injured in the bombing of the tents of displaced Palestinians in Khan Younis.  رضيع فلسطيني بقـ.ـصف اسرائيلي لخيام النازحين غرب خانيونس.` },
+      { src: "videos/73.mp4", date: "Thursday, May 8th, 2025", caption: `Several children were martyred as a result of an Israeli airstrike targeting a home in the western area of Khan Younis.  استشـ ـهاد عدد من الأطفال جراء قـ ـصف إسرائيلي استهـ ـدف منزلاً في المنطقة الغربية من خانيونس.` },
+      { src: "videos/51.mp4", date: "Thursday, May 8th, 2025", caption: `A little girl was divided into two parts after the occupation bombed a home in Beit Lahya, north of Gaza.  طفلة شطر جسدها إلى نصفين بعد قصف منزلها في بيت لاهيا` },
+      { src: "videos/63.mp4", date: "Thursday, May 8th, 2025", caption: `A child was killed in an Israeli air strike, west of Gaza city.  وداع طفل ارتقى في قـ.ـصف غرب مدينة غـ.ـزة` },
+      { src: "videos/66.mp4", date: "Thursday, May 8th, 2025", caption: `An Israeli air strike targets the humanitarian aid security personnel in Gaza City.   طيران الاحتلال يستهدف عناصر تأمين المساعدات الإنسانية في غزة` },
+      { src: "videos/53.mp4", date: "Thursday, May 8th, 2025", caption: `The horrific massacre that committed by the Israeli warplanes in Al Karama school in Gaza city today.   مشاهد مروعة لمجزرة مدرسة الكرامة في مدينة غزة اليوم` },
+      { src: "videos/77.mp4", date: "Thursday, May 8th, 2025", caption: `6 martyrs and several injured in an Israeli airstrike targeting a house near the Maza Roundabout ‘Al-Sikka’ in the center of Khan Yunis, southern Gaza Strip.    ٦شهداء ومصابون في قصف إسرائيلي استهدف منزلًا قرب دوار موزة “ السكة” وسط مدينة خان يونس جنوبي قطاع غزة.` },
+      { src: "videos/59.mp4", date: "Thursday, May 8th, 2025", caption: `Children were injured in the bombing of the school.   أطفال أصيبوا في قصف المدرسة` },
+      { src: "videos/54.mp4", date: "Thursday, May 8th, 2025", caption: `Over 30 Palestinians including children and women were killed in Israeli airstrikes that targeted a crowded street in Gaza city.   اكثر من 30 شهـ..ـيد في قصف اسرائيلي شارع مكتظ في وسط مدينة غزة.` },
+      { src: "videos/52.mp4", date: "Thursday, May 8th, 2025", caption: `A little girl was divided into two parts after bombing a home in Beit Lahya, north of Gaza.   طفلة شطر جسدها إلى نصفين بعد قصف منزلها في بيت لاهيا` },
+      { src: "videos/72.mp4", date: "Thursday, May 8th, 2025", caption: `Children killed along with their families in Israeli air strikes in Khan Younis.  أطفال استشهدوا مع عائلاتهم في قصف اسرائيلي استهدفهم في خانيونس` },
+      { src: "videos/67.mp4", date: "Thursday, May 8th, 2025", caption: `The little girl Maha Abu Zeina was killed along with her mother and family members in an Israeli air strike that targeted their home in Gaza.  ‎الطفة مها أبو زينة ارتقت مع والدتها وأفراد عائلتها في قصف اسرائيلي على غزة.` },
+      { src: "videos/74.mp4", date: "Thursday, May 8th, 2025", caption: `Saba and Sana, four-year-old twins, were born together and martyred together in the bombing of their home by the occupation.  صبا وسنا توآم اربع سنوات ولدتا معا واستشهدتا معا في قصف الاحتلا.ل المنزلهما` },
+      { src: "videos/76.mp4", date: "Thursday, May 8th, 2025", caption: `Two young girls were killed in an Israeli drone strike that targeted them in the Nusairat refugee camp, central Gaza.  ارتقاء طفلتين في قصف لمسيرة اسرائيلية استهدفهما في مخيم النصيرات وسط القطاع.` },
+      { src: "videos/70.mp4", date: "Thursday, May 8th, 2025", caption: `An injured child is located on the roof of a neighboring building after being thrown by the force of the explosion from his targeted home, amidst significant difficulties for both residents and rescue teams to reach him due to the danger of the area and the ongoing airstrikes.  طفل مصـ ـاب على سطح مبنى مجاور بعد أن قذفته شدة الانـ ـفجار من منزله المستهـ ـدف، وسط صعوبات كبيرة في وصول الأهالي وطواقم الإنقاذ إليه بسبب خطورة الموقع واستمرار القـ ـصف.` },
+      { src: "videos/71.mp4", date: "Thursday, May 8th, 2025", caption: `Gazan Children Face Hunger Amid Siege and Aid Blockade  In a heartbreaking daily scene, children in Gaza crowd together carrying empty pots in search of food, under a continuing siege and a blockade on humanitarian aid. Hunger has become harsher than war, and the humanitarian crisis is worsening, while the international community remains silent.  أطفال غـ ـزة يواجهون الجوع وسط  الحـ ـصار ومنع المساعدات  في مشهد مؤلم يتكرر يوميًا، يتزاحم الأطفال في غـ ـزة وهم يحملون أواني فارغة بحثًا عن الطعام، في ظل حصـ ـار مستمر ومنع وصول المساعدات الإنسانية. الجوع بات أقسى من الحـ ـرب، والأزمة الإنسانية تتفاقم، بينما يواصل المجتمع الدولي صمته.` },
+      { src: "videos/49.mp4", date: "Wednesday, May 7th, 2025", caption: `A mother embraces her son who has died of malnutrition and starvation due to the ongoing blockade and ban of the entry of humanitarian aid to Gaza.  ام فلسطينيه تحتضن طفلها الصغير بعد وفاتهي بسبب سوء التغذية ونقص الدواء في مستشفى شهداء الاقصى في دير البلح وسط قطاع غزة` },
+      { src: "videos/50.mp4", date: "Wednesday, May 7th, 2025", caption: `A child in Gaza shows her frail body due to starvation, while many other children suffer the same plight as a result of the ongoing siege.   طفلة في غـ ـزة يظهر جسدها النحيل بسبب المجاعة، في وقت يعاني فيه العديد من الأطفال من نفس المعاناة نتيجة  الحـ ـصار المستمر.` },
+      { src: "videos/39.mp4", date: "Wednesday, May 7th, 2025", caption: `` },
+      { src: "videos/48.mp4", date: "Wednesday, May 7th, 2025", caption: `Aerial image showing the extensive destruction of the Canada's well area, southwest of Rafah city.  صورة جوية توضح حجم الدمار الكبير لمنطقة بير كندا جنوب غرب مدينة رفح` },
+      { src: "videos/46.mp4", date: "Wednesday, May 7th, 2025", caption: `14-year-old Minatullah Ghannam stands in front of her home in Nur Shams refugee camp, which is being demolished by Israeli occupation forces. She said, "I couldn't go with my family to retrieve our belongings because I was at school." The demolition of the house is part of a plan announced by the Israeli army to destroy 106 homes in the Tulkarem and Nur Shams camps under the pretext of "security reasons."  الطفلة منة اللّٰه غنام (14 عاماً) تقف أمام منزلها في مخيم نور شمس، الذي يتم تدميره على يد قوات الاحتلال الإسرائيلي. وقالت: "لم أتمكن من الذهاب مع عائلتي لاسترجاع أغراضنا لأنني كنت في المدرسة". يأتي تدمير المنزل ضمن خطة أعلنها الجيش الإسرائيلي لهدم 106 منازل في مخيمات طولكرم ونور شمس تحت ذريعة "الأسباب الآمنية"` },
+      { src: "videos/47.mp4", date: "Wednesday, May 7th, 2025", caption: `Children in Gaza are dying due to the intensification of famine in light of the stifling Israeli siege, the closure of crossings, and the ongoing war on the Gaza Strip.  الطفولة في غزة تموت بسبب اشتداد المجاعة في ظل الحصار الاسرائيلي الخانق واغلاق المعابر واستمرار الحرب على قطاع غزة` },
+      { src: "videos/45.mp4", date: "Wednesday, May 7th, 2025", caption: `A number of Palestinians were killed after the occupation bombed a school in the Braij refugee camp, central Gaza.  عدد من الش.هداء في قص..ف مدرسة في مخيم البريج وسط القطاع.` }
+    ];
+
+    let current = 0;
+    const player = document.getElementById('player');
+    const dateDisplay = document.getElementById('dateDisplay');
+    const captionDisplay = document.getElementById('captionDisplay');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+
+    function loadVideo(index) {
+      if (index >= 0 && index < videos.length) {
+        current = index;
+        player.src = videos[current].src;
+        dateDisplay.textContent = videos[current].date;
+        captionDisplay.textContent = videos[current].caption;
+        player.play();
+      }
+    }
+
+    loadVideo(current);
+
+    player.addEventListener('ended', () => {
+      if (current < videos.length - 1) {
+        loadVideo(current + 1);
+      }
+    });
+
+    prevBtn.addEventListener('click', () => {
+      if (current > 0) {
+        loadVideo(current - 1);
+      }
+    });
+
+    nextBtn.addEventListener('click', () => {
+      if (current < videos.length - 1) {
+        loadVideo(current + 1);
+      }
+    });
+  </script>
+</body>
+</html>

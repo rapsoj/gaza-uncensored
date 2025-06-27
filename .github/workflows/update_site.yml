@@ -35,8 +35,13 @@ jobs:
     - name: Generate HTML
       run: python generate_html.py
       
-    - name: Restore CNAME file
-      run: echo "uncensoredgaza.org" > CNAME
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_branch: gh-pages
+        publish_dir: ./  # adjust if you output to a subfolder
+        cname: uncensoredgaza.org
 
     - name: Commit and push changes
       env:

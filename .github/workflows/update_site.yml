@@ -42,5 +42,3 @@ jobs:
         publish_branch: gh-pages
         publish_dir: ./  # adjust if you output to a subfolder
         cname: uncensoredgaza.org
-        git commit -m "🔄 Auto-update videos and HTML" || echo "No changes to commit"
-        git push https://x-access-token:${GH_PAT}@github.com/${{ github.repository }} HEAD:main
